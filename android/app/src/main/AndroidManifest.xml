@@ -1,0 +1,219 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+<!-- SAF (Storage Access Framework) does not require any storage permissions -->
+<!-- Users grant access through the system file picker UI -->
+<uses-permission android:name="android.permission.INTERNET"/>
+<!-- Only keep INTERNET permission if your app needs network access -->
+
+    <application
+        android:label="Subtitle Studio"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
+        <!-- Pure SAF implementation - no legacy storage attributes needed -->
+        
+        <!-- FileProvider for sharing files across apps (complements SAF) -->
+        <!-- Works on all Android versions and enables secure file sharing -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            android:extractNativeLibs="false">
+            <!-- Optimized keyboard handling: adjustResize provides faster keyboard animations than adjustPan -->
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            
+            <!-- Intent filters optimized for SAF compatibility across all Android versions -->
+            <!-- Supports both file:// (older versions) and content:// (SAF) schemes -->
+            
+            <!-- Intent filters for .msone files only -->
+            <!-- Intent filter for opening .msone files via file scheme -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.msone" />
+            </intent-filter>
+            
+            <!-- Intent filter for content URIs with .msone files -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.msone" />
+            </intent-filter>
+            
+            <!-- Intent filter for JSON MIME types (for .msone files) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
+            
+            <!-- Intent filter for text/plain MIME type with .msone extension -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:pathPattern=".*\\.msone" />
+            </intent-filter>
+            
+            <!-- Intent filter for generic application/octet-stream -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:pathPattern=".*\\.msone" />
+            </intent-filter>
+            
+            <!-- Intent filter for sharing/sending .msone files -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
+            
+            <!-- Intent filter for sharing/sending subtitle files only -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/x-subrip" />
+            </intent-filter>
+            
+            <!-- Intent filter for sharing/sending text files -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Activity alias for Import functionality -->
+        <activity-alias
+            android:name=".ImportActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="Import to Studio">
+            
+            <!-- Intent filter for importing .srt files via file scheme -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.srt" />
+            </intent-filter>
+            
+            <!-- Intent filter for content URIs with .srt files -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.srt" />
+            </intent-filter>
+            
+            <!-- Intent filter for specific subtitle MIME types -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/x-subrip" />
+            </intent-filter>
+            
+            <!-- Intent filter for text/plain files with .srt extension -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:pathPattern=".*\\.srt" />
+            </intent-filter>
+        </activity-alias>
+        
+        <!-- Activity alias for Source View functionality -->
+        <activity-alias
+            android:name=".SourceViewActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="View in Studio">
+            
+            <!-- Intent filter for viewing .srt files via file scheme -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.srt" />
+            </intent-filter>
+            
+            <!-- Intent filter for content URIs with .srt files -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.srt" />
+            </intent-filter>
+            
+            <!-- Intent filter for specific subtitle MIME types -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/x-subrip" />
+            </intent-filter>
+            
+            <!-- Intent filter for text/plain files with .srt extension -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:pathPattern=".*\\.srt" />
+            </intent-filter>
+        </activity-alias>
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>

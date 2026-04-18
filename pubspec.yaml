@@ -1,0 +1,74 @@
+name: subtitle_studio
+description: "Subtitle Studio - Multi platform professional subtitle editing app"
+publish_to: 'none'
+version: 3.0.0+30
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  charset_converter: ^2.3.0
+  # chewie: ^1.11.0 # Replaced with media_kit
+  device_info_plus: ^11.5.0
+  filesystem_picker: ^4.1.0
+  flutter:
+    sdk: flutter
+  hotkey_manager: ^0.2.3                  # Desktop keyboard shortcuts
+  http: ^1.4.0
+  isar_community: ^3.3.0
+  isar_community_flutter_libs: ^3.3.0
+  media_kit: ^1.2.1                       # Primary package
+  media_kit_video: ^2.0.0                # For video rendering
+  media_kit_native_event_loop: ^1.0.9    # Support for higher number of concurrent instances
+  media_kit_libs_video: ^1.0.7           # Native libraries for video rendering
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.1
+  provider: ^6.1.5+1
+  flex_color_picker: ^3.7.1
+  flutter_svg: ^2.2.0
+  ffmpeg_kit_flutter_new_min_gpl: ^2.1.1
+  google_fonts: ^6.3.0
+  get: ^4.7.2
+  html: ^0.15.6
+  shared_preferences: ^2.5.3
+  package_info_plus: ^8.3.0
+  flutter_file_dialog: ^3.0.2
+  file_picker: ^10.2.1
+  share_plus: ^11.0.0
+  url_launcher: ^6.3.2
+  in_app_update: ^4.2.5
+  dio: ^5.8.0  # For downloading files
+  archive: ^4.0.7  # For extracting tar.gz files
+  uuid: ^4.5.1  # For generating unique command IDs
+  flutter_bloc: ^9.1.1  # State management with Bloc pattern
+  equatable: ^2.0.7  # Value equality for immutable states
+  flutter_markdown_plus: ^1.0.5  # Markdown rendering for AI explanations
+  scrollable_positioned_list: ^0.3.8  # Precise index-based scrolling
+  flutter_dotenv: ^5.1.0  # Environment variables from .env file
+  flutter_gemini:  # Gemini AI integration
+    git:
+      url: https://github.com/AkhmadRamadani/flutter_gemini.git
+
+dependency_overrides:
+  hotkey_manager_linux:
+    git:
+      url: https://github.com/gepbird/hotkey_manager.git
+      ref: fix-build-failure
+      path: packages/hotkey_manager_linux
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.7.1
+  isar_community_generator: ^3.3.0-dev.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/movie_off.svg
+    - assets/msone.svg
+    - assets/msone_bg.jpg
+    - lib/utils/normalization.sed
+    - assets/magnet-solid.svg
+    - .env
