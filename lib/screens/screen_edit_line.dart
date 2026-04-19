@@ -158,6 +158,7 @@ class EditSubtitleScreenState extends State<EditSubtitleScreen> {
   String _initialOriginalText = '';
   String _initialEditedText = '';
   String _initialStartTime = '';
+  bool _isCommentDialogOpen = false; // Track if comment dialog is currently visible
   String _initialEndTime = '';
 
   // Variables to track time validation errors
@@ -3027,8 +3028,17 @@ class EditSubtitleScreenState extends State<EditSubtitleScreen> {
           comment: _subtitleLine!.comment,
         );
         
+        // Mark dialog as open
+        setState(() => _isCommentDialogOpen = true);
+        
         // Use the video player's fullscreen-specific comment dialog
         videoPlayerState.showFullscreenCommentDialog(subtitleWithComment);
+        
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            setState(() => _isCommentDialogOpen = false);
+          }
+        });
         return;
       }
     } else {
@@ -3060,6 +3070,9 @@ class EditSubtitleScreenState extends State<EditSubtitleScreen> {
     // Flag to track if video has been resumed to prevent double resuming
     bool hasResumed = false;
     
+    // Mark dialog as open
+    setState(() => _isCommentDialogOpen = true);
+    
     // Normal mode or fallback - use the standard comment dialog
     CommentDialog.show(
       context,
@@ -3069,6 +3082,13 @@ class EditSubtitleScreenState extends State<EditSubtitleScreen> {
       subtitleIndex: _subtitleLine!.index,
       onCommentSaved: (comment) async {
         try {
+          // If the line is not marked, mark it first
+          if (!_subtitleLine!.marked) {
+            await _toggleMarkLine();
+            // Small delay to ensure mark operation completes
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
+          
           // Update comment in database  
           final success = await updateSubtitleLineComment(
             widget.subtitleId,
@@ -3108,6 +3128,13 @@ class EditSubtitleScreenState extends State<EditSubtitleScreen> {
       },
       onCommentDeleted: () async {
         try {
+          // If the line is not marked, mark it first (marking is required for comments)
+          if (!_subtitleLine!.marked) {
+            await _toggleMarkLine();
+            // Small delay to ensure mark operation completes
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
+          
           // Delete comment from database
           final success = await updateSubtitleLineComment(
             widget.subtitleId,
@@ -3145,6 +3172,11 @@ class EditSubtitleScreenState extends State<EditSubtitleScreen> {
         }
       },
     ).then((_) {
+      // Mark dialog as closed when dismissed
+      if (mounted) {
+        setState(() => _isCommentDialogOpen = false);
+      }
+      
       // This executes when the dialog is dismissed (by canceling without save/delete)
       // Resume video if it was playing before dialog opened and we haven't already resumed it
       if (wasPlaying && videoPlayerState != null && !hasResumed) {
@@ -4294,23 +4326,15 @@ class EditSubtitleScreenState extends State<EditSubtitleScreen> {
   }
 
   void _handleMarkLineAndCommentShortcut() {
-    // If line is not marked, mark it first, then show comment dialog
-    // If line is already marked, just show comment dialog
+    // Don't open a new dialog if one is already visible
+    if (_isCommentDialogOpen) {
+      return;
+    }
+    
+    // Show comment dialog without marking first
+    // Marking will happen when user presses 'Add' button
     if (_subtitleLine != null) {
-      if (!_subtitleLine!.marked) {
-        // Mark the line first, then show comment dialog
-        _toggleMarkLine().then((_) {
-          // Wait a bit for the mark operation to complete, then show comment dialog
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) {
-              _showCommentDialogForCurrentLine();
-            }
-          });
-        });
-      } else {
-        // Line is already marked, just show comment dialog
-        _showCommentDialogForCurrentLine();
-      }
+      _showCommentDialogForCurrentLine();
     }
   }
 

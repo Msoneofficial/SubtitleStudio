@@ -177,6 +177,7 @@ class _EditScreenState extends State<EditScreen> with TickerProviderStateMixin {
   double _resizeRatio = 0.35; // Track the resize ratio for desktop layout
   Timer? _resizeRatioSaveTimer; // Timer for debouncing resize ratio saves
   bool _isResizeRatioLoaded = false; // Track if resize ratio has been loaded from preferences
+  bool _isCommentDialogOpen = false; // Track if comment dialog is currently visible
   
   // Mobile video resize support
   double _mobileVideoResizeRatio = 0.4; // Track the mobile video resize ratio
@@ -2135,11 +2136,20 @@ Future<void> _deleteSelectedSubtitles() async {
           comment: line.comment,
         );
         
+        // Mark dialog as open
+        setState(() => _isCommentDialogOpen = true);
+        
         // Use the video player's fullscreen-specific comment dialog
         videoPlayerState.showFullscreenCommentDialog(subtitleWithComment,
           originalText: line.original,
           editedText: line.edited,
         );
+        
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            setState(() => _isCommentDialogOpen = false);
+          }
+        });
         return;
       }
     } else {
@@ -2161,6 +2171,9 @@ Future<void> _deleteSelectedSubtitles() async {
     
     // Flag to track if video has been resumed to prevent double resuming
     bool hasResumed = false;
+    
+    // Mark dialog as open
+    setState(() => _isCommentDialogOpen = true);
     
     // Normal mode or fallback - use the standard comment dialog
     CommentDialog.show(
@@ -2234,6 +2247,11 @@ Future<void> _deleteSelectedSubtitles() async {
         }
       } : null,
     ).then((_) {
+      // Mark dialog as closed when dismissed
+      if (mounted) {
+        setState(() => _isCommentDialogOpen = false);
+      }
+      
       // This executes when the dialog is dismissed (by canceling without save/delete)
       // Resume video if it was playing before dialog opened and we haven't already resumed it
       if (wasPlaying && videoPlayerState != null && !hasResumed) {
@@ -4814,6 +4832,11 @@ Future<void> _deleteSelectedSubtitles() async {
   }
 
   void _handleMarkLineAndCommentShortcut() {
+    // Don't open a new dialog if one is already visible
+    if (_isCommentDialogOpen) {
+      return;
+    }
+    
     int targetIndex;
     
     // Determine which line to operate on

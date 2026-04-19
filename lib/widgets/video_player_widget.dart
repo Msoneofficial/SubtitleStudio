@@ -4263,6 +4263,7 @@ class _FullscreenControlsWidget extends StatefulWidget {
 class _FullscreenControlsWidgetState extends State<_FullscreenControlsWidget> {
   bool _controlsVisible = true;
   Timer? _hideTimer;
+  bool _isCommentDialogOpen = false; // Track if comment dialog is currently visible
   
   // Cache active subtitle to avoid expensive searches every frame
   Subtitle? _cachedActiveSubtitle;
@@ -4922,6 +4923,11 @@ class _FullscreenControlsWidgetState extends State<_FullscreenControlsWidget> {
     String? originalText,
     String? editedText,
   }) {
+    // Don't open a new dialog if one is already visible
+    if (_isCommentDialogOpen) {
+      return;
+    }
+    
     debugPrint('showCommentDialogForSubtitle: Triggering fullscreen comment dialog for subtitle ${subtitle.index}');
     _showCommentDialog(subtitle, originalText: originalText, editedText: editedText);
   }
@@ -4948,6 +4954,9 @@ class _FullscreenControlsWidgetState extends State<_FullscreenControlsWidget> {
     String? originalText,
     String? editedText,
   }) async {
+    // Mark dialog as open
+    setState(() => _isCommentDialogOpen = true);
+    
     // Store the current playing state before showing dialog
     final wasPlaying = widget.player.state.playing;
     debugPrint('Fullscreen comment dialog opening - video was ${wasPlaying ? 'playing' : 'paused'}');
@@ -4999,6 +5008,11 @@ class _FullscreenControlsWidgetState extends State<_FullscreenControlsWidget> {
       } catch (e) {
         // Ignore removal errors (overlay might already be removed)
         debugPrint('Error removing dialog overlay: $e');
+      }
+      
+      // Mark dialog as closed
+      if (mounted) {
+        setState(() => _isCommentDialogOpen = false);
       }
       
       // Resume video if it was playing before dialog opened
